@@ -83,21 +83,27 @@ function Model({ animation, setAction, ...props }) {
       const mixer = action.getMixer(); // Get the mixer associated with the action
 
       action.reset().fadeIn(0.24).play();
-      if (animation !== "standing" || animation !== "sitting") {
+
+      console.log("animation: ", animation);
+      if (animation !== "standing" && animation !== "sitting") {
         action.clampWhenFinished = true; // Ensure the animation stops at the last frame
         action.loop = LoopOnce; // Play the animation only once
+      } else {
+        action.clampWhenFinished = false; // Ensure the animation does not clamp
+        action.loop = -1; // Play the animation infinitely
       }
 
       // Event listener for 'finished' using the mixer
       const onFinished = (event) => {
         if (event.action === action) {
-          console.log("finished");
-          setAction("sitting");
+          if (animation !== "sitting") {
+            console.log("finished");
+            setAction("sitting");
+          }
         }
       };
 
       mixer.addEventListener("finished", onFinished);
-
       return () => {
         action.fadeOut(0.24);
         mixer.removeEventListener("finished", onFinished); // Cleanup listener
@@ -175,8 +181,10 @@ export default function DogModel() {
             shadow-mapSize={[1024, 1024]} // Higher resolution for better shadow quality
           />
           <OrbitControls
-            minPolarAngle={0} // Prevent rotating below the horizontal plane
+            minPolarAngle={Math.PI / 3} // Prevent rotating below the horizontal plane
             maxPolarAngle={Math.PI / 2} // Prevent rotating above 90 degrees
+            minAzimuthAngle={-Math.PI / 3}
+            maxAzimuthAngle={Math.PI / 3}
             enableZoom={false} // Disable zoom functionality
           />
           <Stage
